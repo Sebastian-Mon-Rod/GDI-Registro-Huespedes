@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlojaGest | Sistema Integral de Gestión Hotelera</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏨</text></svg>">
+</head>
+<body class="app-body">
+
+  <!-- ========================================================
+       MODAL DE INICIO DE SESIÓN (LOGIN CORPORATIVO)
+       ======================================================== -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="login-logo">🏨</span>
+        <h2>AlojaGest</h2>
+        <p class="login-sub">Sistema Integral de Gestión Hotelera</p>
+        <div class="login-hotel-badge">Hotel Cumbre Real Airport</div>
+      </div>
+
+      <form id="form-login" class="login-form">
+        <div class="form-alert" id="login-alert" style="display: none;"></div>
+
+        <div class="form-group">
+          <label for="login-usuario">Usuario o Código de Empleado</label>
+          <input type="text" id="login-usuario" placeholder="Ej. admin o E001" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">Contraseña (DNI del empleado)</label>
+          <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">
+          Ingresar al Sistema
+        </button>
+
+        <div class="login-help-box">
+          <p><strong>Cuentas de acceso:</strong></p>
+          <p>👑 <b>Administrador:</b> Usuario: <code>admin</code> (o <code>JeanPiero</code>) | Clave: <code>admin</code> (o <code>JeanPiero</code>)</p>
+          <p>👤 <b>Recepcionista:</b> Usuario: <code>E002</code> | Clave (DNI): <code>70000002</code></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       LAYOUT PRINCIPAL CON MENÚ LATERAL IZQUIERDO (SIDEBAR)
+       ======================================================== -->
+  <div class="app-layout" id="app-layout">
+
+    <!-- SIDEBAR IZQUIERDO DESPLEGABLE -->
+    <aside class="app-sidebar" id="app-sidebar">
+      <!-- Encabezado Sidebar -->
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <span class="sidebar-logo">🏨</span>
+          <div class="sidebar-brand-text">
+            <span class="brand-title">AlojaGest</span>
+            <span class="brand-tag">v2.0 Pro</span>
+          </div>
+        </div>
+        <button id="btn-toggle-sidebar" class="sidebar-toggle-btn" title="Contraer / Expandir Menú">
+          ◀
+        </button>
+      </div>
+
+      <!-- Hotel Tenant Pill -->
+      <div class="sidebar-hotel">
+        <span class="hotel-status-dot"></span>
+        <span class="hotel-title">Hotel Cumbre Real</span>
+      </div>
+
+      <!-- Menú de Navegación Vertical -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">OPERACIONES</div>
+        
+        <button class="sidebar-nav-item active" data-tab="tab-dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Panel Ejecutivo</span>
+        </button>
+
+        <button class="sidebar-nav-item" data-tab="tab-rack">
+          <span class="nav-icon">🏢</span>
+          <span class="nav-label">Rack Habitaciones</span>
+        </button>
+
+        <button class="sidebar-nav-item" data-tab="tab-reservas">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Reservas y Estadías</span>
+        </button>
+
+        <button class="sidebar-nav-item" data-tab="tab-huespedes">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Directorio Huéspedes</span>
+        </button>
+
+        <div class="nav-section-label">GESTIÓN & REPORTES</div>
+
+        <button class="sidebar-nav-item" data-tab="tab-reportes">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">Centro de Reportes</span>
+        </button>
+
+        <button class="sidebar-nav-item" data-tab="tab-auditoria">
+          <span class="nav-icon">🛡️</span>
+          <span class="nav-label">Bitácora de Auditoría</span>
+        </button>
+
+        <!-- MÓDULO EXCLUSIVO PARA ADMINISTRADORES -->
+        <button class="sidebar-nav-item nav-admin-only" id="nav-btn-empleados" data-tab="tab-empleados" style="display: none;">
+          <span class="nav-icon">👔</span>
+          <span class="nav-label">Gestión de Personal</span>
+          <span class="badge badge-admin">Admin</span>
+        </button>
+      </nav>
+
+      <!-- Pie de Sidebar: Perfil de Usuario y Logout -->
+      <div class="sidebar-footer">
+        <div class="user-profile-badge">
+          <div class="user-avatar" id="sidebar-user-avatar">👤</div>
+          <div class="user-meta">
+            <span class="user-name" id="sidebar-user-name">Cargando...</span>
+            <span class="user-role badge badge-secondary" id="sidebar-user-role">Recepcionista</span>
+          </div>
+        </div>
+        <button id="btn-logout" class="btn-logout" title="Cerrar Sesión">
+          🚪 Salir
+        </button>
+      </div>
+    </aside>
+
+    <!-- ÁREA DE CONTENIDO PRINCIPAL -->
+    <div class="app-main-content">
+
+      <!-- TOPBAR SUPERIOR (RELOJ, ESTADO DE BD Y ACCIÓN RÁPIDA) -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button id="btn-sidebar-mobile-toggle" class="sidebar-mobile-btn">
+            ☰ Menú
+          </button>
+          <div class="topbar-clock-box">
+            <span id="live-clock" class="clock-display">00:00:00</span>
+            <span id="live-date" class="date-display">--/--/----</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div id="db-status-badge" class="badge badge-success">
+            <span class="status-dot"></span>
+            <span id="db-status-text">PostgreSQL Online</span>
+          </div>
+
+          <button id="btn-topbar-reserva" class="btn btn-primary btn-sm" onclick="abrirModalReserva(false)">
+            ➕ Nueva Reserva
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEWPORT DE MÓDULOS -->
+      <main class="modules-viewport">
+
+        <!-- ========================================================
+             1. TAB: PANEL EJECUTIVO (DASHBOARD)
+             ======================================================== -->
+        <section id="tab-dashboard" class="module-tab active">
+          <div class="pane-header">
+            <div>
+              <h2>Panel Ejecutivo de Ocupación</h2>
+              <p class="pane-subtitle">Métricas clave y control operativo de capacidad hotelera.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="recargarDashboard()">🔄 Actualizar KPIs</button>
+          </div>
+
+          <!-- Métricas KPIs -->
+          <div class="kpi-grid">
+            <div class="kpi-card kpi-blue">
+              <div class="kpi-icon-wrap">📊</div>
+              <div class="kpi-body">
+                <div class="kpi-metric" id="kpi-ocupacion">0%</div>
+                <div class="kpi-title">Tasa de Ocupación</div>
+                <div class="kpi-meta"><span id="kpi-ocupadas-ratio">0</span> de 20 habitaciones</div>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-emerald" onclick="navegarARack('Disponible')">
+              <div class="kpi-icon-wrap">🛏️</div>
+              <div class="kpi-body">
+                <div class="kpi-metric" id="kpi-libres">0</div>
+                <div class="kpi-title">Habitaciones Libres</div>
+                <div class="kpi-meta">Disponibles para venta</div>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-indigo" onclick="navegarARack('Reservada')">
+              <div class="kpi-icon-wrap">📋</div>
+              <div class="kpi-body">
+                <div class="kpi-metric" id="kpi-reservadas">0</div>
+                <div class="kpi-title">Reservas Activas</div>
+                <div class="kpi-meta">Check-in pendiente</div>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-amber" onclick="navegarARack('Limpieza')">
+              <div class="kpi-icon-wrap">🧹</div>
+              <div class="kpi-body">
+                <div class="kpi-metric" id="kpi-limpieza">0</div>
+                <div class="kpi-title">En Limpieza</div>
+                <div class="kpi-meta">Aseo y desinfección</div>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-purple" onclick="cambiarPestana('tab-huespedes')">
+              <div class="kpi-icon-wrap">👥</div>
+              <div class="kpi-body">
+                <div class="kpi-metric" id="kpi-huespedes">0</div>
+                <div class="kpi-title">Cartera de Huéspedes</div>
+                <div class="kpi-meta">Clientes en base de datos</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Distribución y Flujo del Día -->
+          <div class="dash-row">
+            <div class="card dash-card col-7">
+              <div class="card-header">
+                <h3>Distribución de Capacidad Hotelera</h3>
+                <span class="badge badge-secondary">20 Habitaciones Totales</span>
+              </div>
+              <div class="distribution-bars">
+                <div class="progress-bar-stack">
+                  <div id="bar-ocupadas" class="bar-slice bg-danger" style="width: 25%;" title="Ocupadas"></div>
+                  <div id="bar-reservadas" class="bar-slice bg-primary" style="width: 25%;" title="Reservadas"></div>
+                  <div id="bar-disponibles" class="bar-slice bg-success" style="width: 35%;" title="Disponibles"></div>
+                  <div id="bar-limpieza" class="bar-slice bg-warning" style="width: 15%;" title="En Limpieza"></div>
+                </div>
+                <div class="bar-legend">
+                  <span class="legend-dot"><i class="bg-success"></i> Libres (<b id="leg-disp">0</b>)</span>
+                  <span class="legend-dot"><i class="bg-primary"></i> Reservadas (<b id="leg-res">0</b>)</span>
+                  <span class="legend-dot"><i class="bg-danger"></i> Ocupadas (<b id="leg-ocup">0</b>)</span>
+                  <span class="legend-dot"><i class="bg-warning"></i> Limpieza (<b id="leg-limp">0</b>)</span>
+                </div>
+              </div>
+
+              <div class="rack-preview-banner">
+                <div>
+                  <strong>Rack Rápido:</strong> ¿Deseas ver el mapa de habitaciones y registrar estadías?
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="cambiarPestana('tab-rack')">Ir al Rack ➔</button>
+              </div>
+            </div>
+
+            <div class="card dash-card col-5">
+              <div class="card-header">
+                <h3>Flujo Operativo de Hoy</h3>
+                <span class="badge badge-info">Fecha Actual</span>
+              </div>
+              <div class="today-stats-container">
+                <div class="today-stat-box">
+                  <div class="today-stat-num text-success" id="stat-llegadas-hoy">0</div>
+                  <div class="today-stat-label">Check-ins Esperados</div>
+                </div>
+                <div class="today-stat-box">
+                  <div class="today-stat-num text-warning" id="stat-salidas-hoy">0</div>
+                  <div class="today-stat-label">Check-outs Programados</div>
+                </div>
+              </div>
+              <div class="quick-access-list">
+                <button class="quick-btn" onclick="abrirModalReserva(false)">
+                  <span>➕ Registrar Nueva Reserva</span>
+                  <span>➔</span>
+                </button>
+                <button class="quick-btn" onclick="abrirModalHuesped(false)">
+                  <span>👤 Registrar Nuevo Huésped</span>
+                  <span>➔</span>
+                </button>
+                <button class="quick-btn" onclick="cambiarPestana('tab-reportes')">
+                  <span>📈 Ver Informes Corporativos</span>
+                  <span>➔</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             2. TAB: RACK DE HABITACIONES (ROOM MATRIX)
+             ======================================================== -->
+        <section id="tab-rack" class="module-tab">
+          <div class="pane-header">
+            <div>
+              <h2>Rack Interactivo de Habitaciones</h2>
+              <p class="pane-subtitle">Mapa de ocupación en tiempo real. Clic en una habitación libre para reservarla directamente.</p>
+            </div>
+            <div class="rack-filter-buttons">
+              <button class="btn btn-sm btn-secondary filter-rack-btn active" data-filter="todos">Todas (20)</button>
+              <button class="btn btn-sm btn-secondary filter-rack-btn" data-filter="Disponible">Disponibles</button>
+              <button class="btn btn-sm btn-secondary filter-rack-btn" data-filter="Reservada">Reservadas</button>
+              <button class="btn btn-sm btn-secondary filter-rack-btn" data-filter="Ocupada">Ocupadas</button>
+              <button class="btn btn-sm btn-secondary filter-rack-btn" data-filter="Limpieza">Limpieza</button>
+            </div>
+          </div>
+
+          <div class="rack-grid" id="rack-container">
+            <!-- Render dinámico -->
+          </div>
+        </section>
+
+        <!-- ========================================================
+             3. TAB: GESTIÓN DE RESERVAS Y ESTADÍAS
+             ======================================================== -->
+        <section id="tab-reservas" class="module-tab">
+          <div class="pane-header">
+            <div>
+              <h2>Control de Reservas y Estadías</h2>
+              <p class="pane-subtitle">Ciclo de vida de estadías: Check-in, Check-out, Modificación y Emisión de Vouchers.</p>
+            </div>
+            <button class="btn btn-primary" onclick="abrirModalReserva(false)">
+              ➕ Crear Reserva
+            </button>
+          </div>
+
+          <div class="toolbar-card">
+            <div class="search-input-wrap">
+              <input type="text" id="input-search-reservas" placeholder="Buscar por código de reserva, cliente, DNI o habitación...">
+            </div>
+            <div class="toolbar-selects">
+              <select id="filter-reserva-estado">
+                <option value="todos">Todos los estados</option>
+                <option value="Reservada">Reservada (Check-in pendiente)</option>
+                <option value="Ocupada">Ocupada (En habitación)</option>
+                <option value="Limpieza">Check-out realizado</option>
+                <option value="Disponible">Finalizada</option>
+              </select>
+            </div>
+            <span class="results-badge" id="reservas-count-badge">Cargando...</span>
+          </div>
+
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Huésped Titular</th>
+                  <th>Habitación</th>
+                  <th>Fecha Ingreso</th>
+                  <th>Fecha Salida</th>
+                  <th>Canal</th>
+                  <th>Desayuno</th>
+                  <th>Estado</th>
+                  <th style="text-align: center;">Operaciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-reservas">
+                <tr><td colspan="9" class="loading-td">Cargando reservas desde la base de datos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             4. TAB: DIRECTORIO DE HUÉSPEDES
+             ======================================================== -->
+        <section id="tab-huespedes" class="module-tab">
+          <div class="pane-header">
+            <div>
+              <h2>Directorio Corporativo de Huéspedes</h2>
+              <p class="pane-subtitle">Fichero de clientes, historial de estadías y datos de contacto.</p>
+            </div>
+            <button class="btn btn-primary" onclick="abrirModalHuesped(false)">
+              ➕ Registrar Huésped
+            </button>
+          </div>
+
+          <div class="toolbar-card">
+            <div class="search-input-wrap">
+              <input type="text" id="input-search-huespedes" placeholder="Buscar por DNI, nombres, apellidos o correo electrónico...">
+            </div>
+            <span class="results-badge" id="huespedes-count-badge">Cargando...</span>
+          </div>
+
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Documento</th>
+                  <th>Tipo</th>
+                  <th>Nombres y Apellidos</th>
+                  <th>Teléfono</th>
+                  <th>Correo Electrónico</th>
+                  <th>Reservas Realizadas</th>
+                  <th style="text-align: center;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-huespedes">
+                <tr><td colspan="7" class="loading-td">Cargando catálogo de clientes...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             5. TAB: CENTRO DE REPORTES (LOS 10 REPORTES OFICIALES SQL)
+             ======================================================== -->
+        <section id="tab-reportes" class="module-tab">
+          <div class="pane-header">
+            <div>
+              <h2>Centro de Analítica y Reportes Ejecutivos</h2>
+              <p class="pane-subtitle">Consultas relacionales con JOINs, agrupaciones y análisis de rendimiento.</p>
+            </div>
+            <div class="header-tools">
+              <button class="btn btn-secondary btn-sm" onclick="imprimirReporteActual()">🖨️ Imprimir / Exportar Reporte</button>
+            </div>
+          </div>
+
+          <div class="reports-selector-card">
+            <label for="select-reporte-id">Seleccione el reporte corporativo:</label>
+            <select id="select-reporte-id" class="report-select">
+              <option value="1">Reporte 01: Reservas Registradas en el Sistema (Detallado con Huésped y Canal)</option>
+              <option value="2">Reporte 02: Habitaciones Disponibles para Venta (Tarifas y Categorías)</option>
+              <option value="3">Reporte 03: Huéspedes con Servicio de Desayuno Programado</option>
+              <option value="4">Reporte 04: Habitaciones sin Reserva Asociada (Capacidad Libre)</option>
+              <option value="5">Reporte 05: Rendimiento de Reservas por Recepcionista</option>
+              <option value="6">Reporte 06: Ingresos y Volumen Recaudado por Método de Pago</option>
+              <option value="7">Reporte 07: Total Pagado y Cobros por Reserva (Consolidado)</option>
+              <option value="8">Reporte 08: Auditoría de Reservas Ingresadas en Octubre 2026</option>
+              <option value="9">Reporte 09: Pagos Superiores al Promedio General de Caja</option>
+              <option value="10">Reporte 10: Reservas Pendientes de Asignación Física de Habitación</option>
+            </select>
+            <button class="btn btn-primary" onclick="cargarReporteSeleccionado()">Generar Reporte</button>
+          </div>
+
+          <div class="card report-viewer-card" id="reporte-viewer-container">
+            <div class="report-header-preview">
+              <div>
+                <h3 id="report-title-display">Cargando reporte...</h3>
+                <p id="report-desc-display" class="text-muted">Descripción del informe</p>
+              </div>
+              <span class="badge badge-info" id="report-count-badge">0 registros</span>
+            </div>
+
+            <div class="table-card" style="margin-top: 15px;">
+              <table class="data-table" id="tabla-reporte-dinamico">
+                <thead id="thead-reporte"></thead>
+                <tbody id="tbody-reporte"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             6. TAB: BITÁCORA DE AUDITORÍA
+             ======================================================== -->
+        <section id="tab-auditoria" class="module-tab">
+          <div class="pane-header">
+            <div>
+              <h2>Bitácora de Seguridad y Auditoría Operativa</h2>
+              <p class="pane-subtitle">Eventos de inserción, actualización, bajas y check-ins registrados automáticamente por Triggers y Stored Procedures en PostgreSQL.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadAuditoria()">🔄 Actualizar Bitácora</button>
+          </div>
+
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID Evento</th>
+                  <th>Entidad / Tabla</th>
+                  <th>Operación</th>
+                  <th>Identificador</th>
+                  <th>Detalle Técnico</th>
+                  <th>Fecha y Hora</th>
+                  <th>Usuario PostgreSQL</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-auditoria">
+                <tr><td colspan="7" class="loading-td">Consultando registros de auditoría...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             7. TAB: GESTIÓN DE PERSONAL / EMPLEADOS (ROL ADMINISTRADOR)
+             ======================================================== -->
+        <section id="tab-empleados" class="module-tab">
+          <div class="pane-header">
+            <div>
+              <h2>Administración de Personal y Roles</h2>
+              <p class="pane-subtitle">Gestión de recepcionistas, credenciales de acceso y asignación de privilegios (Módulo exclusivo de Administrador).</p>
+            </div>
+            <button class="btn btn-primary" onclick="abrirModalEmpleado(false)">
+              ➕ Registrar Nuevo Empleado
+            </button>
+          </div>
+
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Nombres y Apellidos</th>
+                  <th>DNI (Contraseña)</th>
+                  <th>Usuario</th>
+                  <th>Rol</th>
+                  <th>Estado</th>
+                  <th>Reservas Gestionadas</th>
+                  <th style="text-align: center;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-empleados">
+                <tr><td colspan="8" class="loading-td">Cargando directorio de personal...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODALES
+       ======================================================== -->
+
+  <!-- MODAL: REGISTRAR / EDITAR EMPLEADO (ADMIN) -->
+  <div id="modal-empleado" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-empleado-title">Registrar Empleado</h3>
+        <button id="btn-close-modal-empleado" class="modal-close">&times;</button>
+      </div>
+      <form id="form-empleado">
+        <div class="form-alert" id="empleado-alert" style="display:none;"></div>
+        <input type="hidden" id="input-empleado-codigo">
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="input-empleado-nombres">Nombres *</label>
+            <input type="text" id="input-empleado-nombres" placeholder="Ej. Carlos Eduardo" required>
+          </div>
+          <div class="form-group col-6">
+            <label for="input-empleado-apellidos">Apellidos *</label>
+            <input type="text" id="input-empleado-apellidos" placeholder="Ej. Rojas Vargas" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="input-empleado-dni">DNI (Contraseña por defecto) *</label>
+            <input type="text" id="input-empleado-dni" placeholder="Ej. 72445588" required>
+          </div>
+          <div class="form-group col-6">
+            <label for="input-empleado-usuario">Nombre de Usuario *</label>
+            <input type="text" id="input-empleado-usuario" placeholder="Ej. carlos.rojas" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="select-empleado-rol">Rol en el Sistema *</label>
+            <select id="select-empleado-rol" required>
+              <option value="Recepcionista">Recepcionista</option>
+              <option value="Administrador">Administrador</option>
+            </select>
+          </div>
+          <div class="form-group col-6">
+            <label for="input-empleado-password">Contraseña Personalizada (Opcional)</label>
+            <input type="password" id="input-empleado-password" placeholder="Dejar en blanco para usar DNI">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btn-cancel-modal-empleado" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Empleado</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVA / EDITAR RESERVA -->
+  <div id="modal-reserva" class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-reserva-title">Registrar Nueva Reserva</h3>
+        <button id="btn-close-modal-reserva" class="modal-close">&times;</button>
+      </div>
+      <form id="form-reserva">
+        <div class="form-alert" id="reserva-alert" style="display:none;"></div>
+        <input type="hidden" id="input-reserva-codigo">
+
+        <div class="form-section-title">1. Selección del Cliente / Huésped Titular</div>
+        <div class="form-row">
+          <div class="form-group col-9">
+            <label for="select-reserva-huesped">Huésped Titular *</label>
+            <select id="select-reserva-huesped" required></select>
+          </div>
+          <div class="form-group col-3" style="justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="abrirModalHuesped(false)" style="height: 38px;">
+              ➕ Nuevo
+            </button>
+          </div>
+        </div>
+
+        <div class="form-section-title">2. Habitación y Fechas de Estadía</div>
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="select-reserva-habitacion">Habitación Asignada *</label>
+            <select id="select-reserva-habitacion" required></select>
+          </div>
+          <div class="form-group col-6">
+            <label for="select-reserva-medio">Canal / Medio de Reserva *</label>
+            <select id="select-reserva-medio" required></select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="input-reserva-ingreso">Fecha y Hora de Ingreso (Check-in) *</label>
+            <input type="datetime-local" id="input-reserva-ingreso" required>
+          </div>
+          <div class="form-group col-6">
+            <label for="input-reserva-salida">Fecha y Hora de Salida (Check-out) *</label>
+            <input type="datetime-local" id="input-reserva-salida" required>
+          </div>
+        </div>
+
+        <div class="form-section-title">3. Adicionales</div>
+        <div class="form-row align-center">
+          <div class="form-group col-5">
+            <label class="checkbox-label">
+              <input type="checkbox" id="input-reserva-desayuno" checked>
+              <span>🍳 Incluir Desayuno Buffet</span>
+            </label>
+          </div>
+          <div class="form-group col-7">
+            <label for="input-reserva-obs">Observaciones Especiales</label>
+            <input type="text" id="input-reserva-obs" placeholder="Ej. Cochera, cama adicional, piso alto...">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btn-cancel-modal-reserva" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Confirmar y Generar Reserva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO / EDITAR HUÉSPED -->
+  <div id="modal-huesped" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-huesped-title">Registrar Nuevo Huésped</h3>
+        <button id="btn-close-modal-huesped" class="modal-close">&times;</button>
+      </div>
+      <form id="form-huesped">
+        <div class="form-alert" id="huesped-alert" style="display:none;"></div>
+        
+        <div class="form-row">
+          <div class="form-group col-4">
+            <label for="input-huesped-tipodoc">Tipo Doc *</label>
+            <select id="input-huesped-tipodoc" required></select>
+          </div>
+          <div class="form-group col-8">
+            <label for="input-huesped-doc">N° de Documento *</label>
+            <input type="text" id="input-huesped-doc" placeholder="Ej. 70984512" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="input-huesped-nombres">Nombres *</label>
+            <input type="text" id="input-huesped-nombres" placeholder="Ej. Valeria" required>
+          </div>
+          <div class="form-group col-6">
+            <label for="input-huesped-apellidos">Apellidos *</label>
+            <input type="text" id="input-huesped-apellidos" placeholder="Ej. Mendoza Silva" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="input-huesped-telefono">Teléfono / Celular</label>
+            <input type="text" id="input-huesped-telefono" placeholder="Ej. 954123456">
+          </div>
+          <div class="form-group col-6">
+            <label for="input-huesped-correo">Correo Electrónico</label>
+            <input type="email" id="input-huesped-correo" placeholder="cliente@ejemplo.com">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btn-cancel-modal-huesped" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Huésped</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VOUCHER DE RESERVA -->
+  <div id="modal-voucher" class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3>Comprobante de Reserva de Hospedaje</h3>
+        <button id="btn-close-modal-voucher" class="modal-close">&times;</button>
+      </div>
+      <div class="voucher-body" id="voucher-content"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-modal-voucher">Cerrar</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir Voucher</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
